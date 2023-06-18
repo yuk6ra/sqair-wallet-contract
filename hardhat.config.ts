@@ -3,42 +3,38 @@ import '@typechain/hardhat'
 import { HardhatUserConfig } from 'hardhat/config'
 import 'hardhat-deploy'
 import '@nomiclabs/hardhat-etherscan'
-
 import 'solidity-coverage'
 
-import * as fs from 'fs'
+import 'dotenv/config'
 
-const mnemonicFileName = process.env.MNEMONIC_FILE ?? `${process.env.HOME}/.secret/testnet-mnemonic.txt`
-let mnemonic = 'test '.repeat(11) + 'junk'
-if (fs.existsSync(mnemonicFileName)) { mnemonic = fs.readFileSync(mnemonicFileName, 'ascii') }
+const privateKey = process.env.PRIVATE_KEY as string
 
-function getNetwork1 (url: string): { url: string, accounts: { mnemonic: string } } {
+function getNetwork1 (url: string): { url: string, accounts: [privateKey: string] } {
   return {
     url,
-    accounts: { mnemonic }
+    accounts: [privateKey]
   }
 }
 
-function getNetwork (name: string): { url: string, accounts: { mnemonic: string } } {
+function getNetwork (name: string): { url: string, accounts: [privateKey: string] } {
   return getNetwork1(`https://${name}.infura.io/v3/${process.env.INFURA_ID}`)
-  // return getNetwork1(`wss://${name}.infura.io/ws/v3/${process.env.INFURA_ID}`)
+  // return getNetwork1(`wss://${name}.infura.io/ws/v3/${process.env.INFURA_ID}`);
 }
 
 const optimizedComilerSettings = {
-  version: '0.8.17',
+  version: '0.8.18',
   settings: {
     optimizer: { enabled: true, runs: 1000000 },
     viaIR: true
   }
 }
-
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [{
-      version: '0.8.15',
+      version: '0.8.18',
       settings: {
         optimizer: { enabled: true, runs: 1000000 }
       }
@@ -54,14 +50,15 @@ const config: HardhatUserConfig = {
     localgeth: { url: 'http://localgeth:8545' },
     goerli: getNetwork('goerli'),
     sepolia: getNetwork('sepolia'),
-    proxy: getNetwork1('http://localhost:8545')
+    proxy: getNetwork1('http://localhost:8545'),
+    mumbai: getNetwork('polygon-mumbai')
   },
   mocha: {
     timeout: 10000
   },
 
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: process.env.SCAN_API_KEY
   }
 
 }
